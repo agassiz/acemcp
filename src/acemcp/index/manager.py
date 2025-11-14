@@ -8,8 +8,8 @@ import os
 from pathlib import Path
 
 import httpx
-import pathspec
 from loguru import logger
+import pathspec
 
 
 def read_file_with_encoding(file_path: Path) -> str:
@@ -25,6 +25,7 @@ def read_file_with_encoding(file_path: Path) -> str:
 
     Raises:
         Exception: If file cannot be read with any supported encoding
+
     """
     encodings = ["utf-8", "gbk", "gb2312", "latin-1"]
 
@@ -57,6 +58,7 @@ def calculate_blob_name(path: str, content: str) -> str:
 
     Returns:
         64-character hexadecimal string (SHA-256 hash value)
+
     """
     hasher = hashlib.sha256()
     hasher.update(path.encode("utf-8"))
@@ -78,6 +80,7 @@ class IndexManager:
             batch_size: Number of files to upload per batch
             max_lines_per_blob: Maximum lines per blob before splitting (default: 800)
             exclude_patterns: List of patterns to exclude from indexing (default: None)
+
         """
         self.storage_path = storage_path
         self.storage_path.mkdir(parents=True, exist_ok=True)
@@ -96,6 +99,7 @@ class IndexManager:
 
         Returns:
             httpx.AsyncClient instance
+
         """
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(timeout=60.0)
@@ -116,6 +120,7 @@ class IndexManager:
 
         Returns:
             Normalized path string
+
         """
         return str(Path(path).resolve()).replace("\\", "/")
 
@@ -127,6 +132,7 @@ class IndexManager:
 
         Returns:
             PathSpec object if .gitignore exists, None otherwise
+
         """
         gitignore_path = root_path / ".gitignore"
         if not gitignore_path.exists():
@@ -158,6 +164,7 @@ class IndexManager:
 
         Raises:
             Exception: Last exception if all retries fail
+
         """
         last_exception = None
 
@@ -167,7 +174,7 @@ class IndexManager:
             except (httpx.TimeoutException, httpx.ConnectError, httpx.ReadTimeout) as e:
                 last_exception = e
                 if attempt < max_retries - 1:
-                    wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                    wait_time = retry_delay * (2**attempt)  # Exponential backoff
                     logger.warning(f"Request failed (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {wait_time}s...")
                     await asyncio.sleep(wait_time)
                 else:
@@ -189,6 +196,7 @@ class IndexManager:
 
         Returns:
             True if path should be excluded, False otherwise
+
         """
         try:
             relative_path = path.relative_to(root_path)
@@ -232,6 +240,7 @@ class IndexManager:
 
         Returns:
             Dictionary mapping normalized project_root_path to blob_names
+
         """
         if not self.projects_file.exists():
             return {}
@@ -247,6 +256,7 @@ class IndexManager:
 
         Args:
             projects: Dictionary mapping normalized project_root_path to blob_names
+
         """
         try:
             with self.projects_file.open("w", encoding="utf-8") as f:
@@ -264,6 +274,7 @@ class IndexManager:
 
         Returns:
             List of blobs (one or more if split)
+
         """
         lines = content.splitlines(keepends=True)
         total_lines = len(lines)
@@ -297,6 +308,7 @@ class IndexManager:
 
         Returns:
             List of blobs with path and content (large files may be split into multiple blobs)
+
         """
         blobs = []
         excluded_count = 0
@@ -313,10 +325,7 @@ class IndexManager:
             current_dir = Path(dirpath)
 
             # Filter out excluded directories to prevent os.walk from descending into them
-            dirnames[:] = [
-                d for d in dirnames
-                if not self._should_exclude(current_dir / d, root_path, gitignore_spec)
-            ]
+            dirnames[:] = [d for d in dirnames if not self._should_exclude(current_dir / d, root_path, gitignore_spec)]
 
             for filename in filenames:
                 file_path = current_dir / filename
@@ -354,6 +363,7 @@ class IndexManager:
 
         Returns:
             Result dictionary with status and message
+
         """
         normalized_path = self._normalize_path(project_root_path)
         logger.info(f"Indexing project from {normalized_path}")
@@ -382,12 +392,7 @@ class IndexManager:
             # Blobs that need to be uploaded
             blobs_to_upload = [blob_hash_map[h] for h in new_hashes]
 
-            logger.info(
-                f"Incremental indexing: total={len(blobs)}, "
-                f"existing={len(existing_hashes)}, "
-                f"new={len(new_hashes)}, "
-                f"to_upload={len(blobs_to_upload)}"
-            )
+            logger.info(f"Incremental indexing: total={len(blobs)}, existing={len(existing_hashes)}, new={len(new_hashes)}, to_upload={len(blobs_to_upload)}")
 
             # Upload only new blobs
             uploaded_blob_names = []
@@ -406,8 +411,9 @@ class IndexManager:
                     logger.info(f"Uploading batch {batch_idx + 1}/{total_batches} ({len(batch_blobs)} blobs)")
 
                     try:
+
                         async def upload_batch():
-                            payload = {"blobs": batch_blobs}
+                            payload = {"blobs": batch_blobs}  # noqa: B023
                             response = await client.post(
                                 f"{self.base_url}/batch-upload",
                                 headers={"Authorization": f"Bearer {self.token}"},
@@ -452,11 +458,7 @@ class IndexManager:
             if blobs_to_upload:
                 total_batches = (len(blobs_to_upload) + self.batch_size - 1) // self.batch_size
                 success_batches = total_batches - len(failed_batches)
-                message = (
-                    f"Project indexed with {len(all_blob_names)} total blobs "
-                    f"(existing: {len(existing_hashes)}, new: {len(uploaded_blob_names)}, "
-                    f"batches: {success_batches}/{total_batches} successful)"
-                )
+                message = f"Project indexed with {len(all_blob_names)} total blobs (existing: {len(existing_hashes)}, new: {len(uploaded_blob_names)}, batches: {success_batches}/{total_batches} successful)"
             else:
                 message = f"Project indexed with {len(all_blob_names)} total blobs (all existing, no upload needed)"
 
@@ -495,6 +497,7 @@ class IndexManager:
 
         Returns:
             Formatted retrieval result
+
         """
         normalized_path = self._normalize_path(project_root_path)
         logger.info(f"Searching context in project {normalized_path} with query: {query}")
@@ -510,10 +513,7 @@ class IndexManager:
             # Log indexing stats
             if "stats" in index_result:
                 stats = index_result["stats"]
-                logger.info(
-                    f"Auto-indexing completed: total={stats['total_blobs']}, "
-                    f"existing={stats['existing_blobs']}, new={stats['new_blobs']}"
-                )
+                logger.info(f"Auto-indexing completed: total={stats['total_blobs']}, existing={stats['existing_blobs']}, new={stats['new_blobs']}")
 
             # Step 2: Load indexed blob names
             projects = self._load_projects()
@@ -538,6 +538,7 @@ class IndexManager:
             }
 
             client = self._get_client()
+
             async def search_request():
                 response = await client.post(
                     f"{self.base_url}/agents/codebase-retrieval",
@@ -566,4 +567,3 @@ class IndexManager:
         except Exception as e:
             logger.exception(f"Failed to search context in project {normalized_path}")
             return f"Error: {e!s}"
-

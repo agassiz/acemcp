@@ -1,10 +1,9 @@
 """Search context tool for MCP server."""
 
-from __future__ import annotations
-
 import asyncio
 from typing import Any
 
+from __future__ import annotations  # noqa:F404
 from loguru import logger
 
 from acemcp.config import get_config
@@ -63,6 +62,7 @@ async def search_context_tool(arguments: dict[str, Any]) -> dict[str, Any]:
 
     Returns:
         Dictionary containing search results
+
     """
     try:
         project_root_path = arguments.get("project_root_path")

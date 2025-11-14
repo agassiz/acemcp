@@ -3,13 +3,13 @@
 import argparse
 import asyncio
 
-import uvicorn
 from loguru import logger
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool
+import uvicorn
 
-from acemcp.config import get_config, init_config
+from acemcp.config import init_config
 from acemcp.logging_config import setup_logging
 from acemcp.tools import search_context_tool, shutdown_index_manager
 from acemcp.web import create_app
@@ -23,11 +23,16 @@ async def list_tools() -> list[Tool]:
 
     Returns:
         List of available tools
+
     """
     return [
         Tool(
             name="search_context",
-            description="Search for relevant code context based on a query within a specific project. This tool automatically performs incremental indexing before searching, ensuring results are always up-to-date. Returns formatted text snippets from the codebase that are semantically related to your query. IMPORTANT: Use forward slashes (/) as path separators in project_root_path, even on Windows.",
+            description="Search for relevant code context based on a query within a specific project. "
+            "This tool automatically performs incremental indexing before searching, "
+            "ensuring results are always up-to-date. "
+            "Returns formatted text snippets from the codebase that are semantically related to your query. "
+            "IMPORTANT: Use forward slashes (/) as path separators in project_root_path, even on Windows.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -37,7 +42,13 @@ async def list_tools() -> list[Tool]:
                     },
                     "query": {
                         "type": "string",
-                        "description": "Natural language search query to find relevant code context. This tool performs semantic search and returns code snippets that match your query. Examples: 'logging configuration setup initialization logger' (finds logging setup code), 'user authentication login' (finds auth-related code), 'database connection pool' (finds DB connection code), 'error handling exception' (finds error handling patterns), 'API endpoint routes' (finds API route definitions). The tool returns formatted text snippets with file paths and line numbers showing where the relevant code is located.",
+                        "description": "Natural language search query to find relevant code context. This tool performs"
+                        " semantic search and returns code snippets that match your query. Examples: "
+                        "'logging configuration setup initialization logger' (finds logging setup code), "
+                        "'user authentication login' (finds auth-related code), 'database connection pool' "
+                        "(finds DB connection code), 'error handling exception' (finds error handling patterns), "
+                        "'API endpoint routes' (finds API route definitions). "
+                        "The tool returns formatted text snippets with file paths and line numbers showing where the relevant code is located.",
                     },
                 },
                 "required": ["project_root_path", "query"],
@@ -56,6 +67,7 @@ async def call_tool(name: str, arguments: dict) -> dict:
 
     Returns:
         Tool execution results
+
     """
     logger.info(f"Tool called: {name} with arguments: {arguments}")
 
@@ -70,6 +82,7 @@ async def run_web_server(port: int) -> None:
 
     Args:
         port: Port to run the web server on
+
     """
     web_app = create_app()
     # Configure uvicorn to use loguru through InterceptHandler
@@ -80,7 +93,7 @@ async def run_web_server(port: int) -> None:
         port=port,
         log_level="warning",
         access_log=False,  # Disable access log to reduce noise
-        log_config=None,   # Disable default logging config to use our interceptor
+        log_config=None,  # Disable default logging config to use our interceptor
     )
     server = uvicorn.Server(config_uvicorn)
     await server.serve()
@@ -93,6 +106,7 @@ async def main(base_url: str | None = None, token: str | None = None, web_port: 
         base_url: Override BASE_URL from command line
         token: Override TOKEN from command line
         web_port: Port for web management interface (None to disable)
+
     """
     web_task: asyncio.Task | None = None
     try:
@@ -131,6 +145,7 @@ def run() -> None:
     # This ensures the WebSocket handler is preserved
     if args.web_port:
         from acemcp.web.log_handler import get_log_broadcaster
+
         get_log_broadcaster()  # Initialize the broadcaster
 
     # Setup logging after log broadcaster is initialized

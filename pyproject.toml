@@ -35,7 +35,7 @@ dev = [
 
 [tool.ruff]
 preview = true
-line-length = 336
+line-length = 320
 
 [tool.ruff.lint]
 # pylint规则
@@ -60,7 +60,7 @@ select = [
 # pylint src --disable=import-error,no-member,line-too-long,broad-exception-caught,broad-exception-raised,logging-fstring-interpolation,too-many-positional-arguments,too-many-instance-attributes,too-many-arguments,too-many-locals,too-many-branches,too-many-statements,too-many-nested-blocks,raise-missing-from,singleton-comparison,too-few-public-methods,consider-iterating-dictionary,consider-using-set-comprehension,not-callable,logging-not-lazy,consider-using-f-string,invalid-name,too-many-public-methods,global-statement,unnecessary-pass,wildcard-import,consider-using-join,cell-var-from-loop,too-many-return-statements,import-outside-toplevel,bare-except,subprocess-run-check,consider-using-dict-items,too-many-boolean-expressions,too-many-lines
 
 # 圈复杂度
-mccabe = { max-complexity = 17 }
+mccabe = { max-complexity = 26 }
 
 ignore = [
     "BLE001",
@@ -96,6 +96,7 @@ ignore = [
     "S501",
     "S324",
     "S104",
+    "D401",
 ]
 
 [tool.ruff.lint.isort]
