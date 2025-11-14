@@ -3,7 +3,6 @@
 import asyncio
 from typing import Any
 
-from __future__ import annotations  # noqa:F404
 from loguru import logger
 
 from acemcp.config import get_config
