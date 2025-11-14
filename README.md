@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/qy527145-acemcp-badge.png)](https://mseep.ai/app/qy527145-acemcp)
+
 简体中文 | [English](./README_EN.md)
 
 # Acemcp
