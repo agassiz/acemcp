@@ -332,6 +332,14 @@ To enable the web interface, use the `--web-port` argument when starting the ser
 - Intelligent WebSocket reconnection with exponential backoff
 
 ## Recent Updates
+### Version 0.2.0
+
+**Bug Fixes:**
+- 🐛 Fixed an issue where acemcp failed to start when a `.env` file with encoding errors existed in the project
+
+**Dependency Updates:**
+- ⬆️ Upgraded third-party dependency package versions
+
 
 ### Version 0.1.9
 

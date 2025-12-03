@@ -112,7 +112,7 @@ _ensure_user_config()
 settings = Dynaconf(
     envvar_prefix="ACEMCP",
     settings_files=[str(USER_CONFIG_FILE)],
-    load_dotenv=True,
+    load_dotenv=False,
     merge_enabled=True,
 )
 
