@@ -332,6 +332,13 @@ To enable the web interface, use the `--web-port` argument when starting the ser
 - Intelligent WebSocket reconnection with exponential backoff
 
 ## Recent Updates
+
+### Version 0.2.1
+
+**Improvements:**
+- 🔧 Optimized the prompt description for `search_context` tool
+- 🔧 Adjusted tool parameter descriptions
+
 ### Version 0.2.0
 
 **Bug Fixes:**
